@@ -275,6 +275,11 @@ function App() {
     }
   }, [currentStep, schoolInfo, schoolData, schedule]);
 
+  // Set edit mode for school users
+  useEffect(() => {
+    // This will be handled by passing autoEditMode prop instead
+  }, [currentStep, currentUser]);
+
   // Load school data from database
   const loadSchoolDataFromDatabase = async (schoolId: string) => {
     try {
@@ -457,6 +462,7 @@ function App() {
             schedule={schedule}
             onBack={handleBack}
             onNewSchedule={handleNewSchedule}
+            autoEditMode={currentUser?.role === 'school'}
           />
         );
       

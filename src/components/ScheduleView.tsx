@@ -6,6 +6,7 @@ interface ScheduleViewProps {
   schedule: Schedule;
   onBack: () => void;
   onNewSchedule: () => void;
+  autoEditMode?: boolean;
 }
 
 const DAYS = ['Понедељак', 'Уторак', 'Среда', 'Четвртак', 'Петак'];
@@ -26,12 +27,14 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
   school, 
   schedule, 
   onBack, 
-  onNewSchedule 
+  onNewSchedule,
+  autoEditMode = false
 }) => {
   const [activeTab, setActiveTab] = useState<'classes' | 'teachers' | 'classrooms'>('classes');
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null);
   const [selectedClassroom, setSelectedClassroom] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(autoEditMode);
 
   const findSubject = (subjectId: string): Subject | undefined => {
     for (const classInfo of school.classes) {
@@ -166,11 +169,26 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
           <button onClick={onBack} className="btn-secondary">
             Назад
           </button>
+          <button 
+            onClick={() => setIsEditMode(!isEditMode)}
+            className={`btn-secondary ${isEditMode ? 'bg-green-600 hover:bg-green-700' : ''}`}
+          >
+            {isEditMode ? 'Заврши уређивање' : 'Уреди распоред'}
+          </button>
           <button onClick={onNewSchedule} className="btn-primary">
             Нови распоред
           </button>
         </div>
       </div>
+
+      {isEditMode && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <h3 className="font-medium text-yellow-800 mb-2">Режим уређивања</h3>
+          <p className="text-sm text-yellow-700">
+            Кликните на ћелију у табели да бисте изменили предмет. Изаберите предмет из падајућег менија.
+          </p>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6">
