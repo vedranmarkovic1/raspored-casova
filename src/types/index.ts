@@ -53,6 +53,7 @@ export interface School {
 }
 
 export interface ScheduleEntry {
+  id?: string; // Optional - from database
   day: number;
   hour: number;
   classId: string;
