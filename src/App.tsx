@@ -5,7 +5,6 @@ import { ScheduleViewComponent } from './components/ScheduleView';
 import { CoordinatorDashboard } from './components/CoordinatorDashboard';
 import { PublicHomePage } from './components/PublicHomePage';
 import { Header } from './components/Header';
-import { ScheduleGenerator } from './utils/scheduleGenerator';
 import { authService } from './services/authService';
 import { scheduleService } from './services/scheduleService';
 import { schoolService } from './services/schoolService';
