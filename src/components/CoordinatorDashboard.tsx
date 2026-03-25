@@ -223,14 +223,15 @@ export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLo
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setSelectedSchool(school)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                      title="Преглед школе"
                     >
                       <Eye size={18} />
                     </button>
                     <button
                       onClick={() => handleDeleteSchool(school.id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded"
+                      title="Обриши школу"
                     >
                       <Trash2 size={18} />
                     </button>
