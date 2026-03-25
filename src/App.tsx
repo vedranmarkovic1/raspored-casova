@@ -199,11 +199,28 @@ function App() {
   // Load school data from database
   const loadSchoolDataFromDatabase = async (schoolId: string) => {
     try {
-      const schoolData = await schoolService.getById(schoolId);
+      const schoolData = await schoolService.getWithRelations(schoolId);
       
       if (schoolData) {
+        // Group subjects by class_id
+        const subjectsByClass: { [key: string]: any[] } = {};
+        if (schoolData.subjects) {
+          schoolData.subjects.forEach((subject: any) => {
+            if (!subjectsByClass[subject.class_id]) {
+              subjectsByClass[subject.class_id] = [];
+            }
+            subjectsByClass[subject.class_id].push(subject);
+          });
+        }
+
+        // Add subjects to classes
+        const classesWithSubjects = schoolData.classes?.map((cls: any) => ({
+          ...cls,
+          subjects: subjectsByClass[cls.id] || []
+        })) || [];
+
         const loadedSchoolData = {
-          classes: schoolData.classes || [],
+          classes: classesWithSubjects,
           teachers: schoolData.teachers || [],
           classrooms: schoolData.classrooms || []
         };
@@ -228,12 +245,29 @@ function App() {
   const handlePublicSchoolSelect = async (school: any) => {
     // For public users, load school data and show schedule
     try {
-      // Load school data
-      const schoolData = await schoolService.getById(school.id);
+      // Load school data with relations
+      const schoolData = await schoolService.getWithRelations(school.id);
       
       if (schoolData) {
+        // Group subjects by class_id
+        const subjectsByClass: { [key: string]: any[] } = {};
+        if (schoolData.subjects) {
+          schoolData.subjects.forEach((subject: any) => {
+            if (!subjectsByClass[subject.class_id]) {
+              subjectsByClass[subject.class_id] = [];
+            }
+            subjectsByClass[subject.class_id].push(subject);
+          });
+        }
+
+        // Add subjects to classes
+        const classesWithSubjects = schoolData.classes?.map((cls: any) => ({
+          ...cls,
+          subjects: subjectsByClass[cls.id] || []
+        })) || [];
+
         const loadedSchoolData = {
-          classes: schoolData.classes || [],
+          classes: classesWithSubjects,
           teachers: schoolData.teachers || [],
           classrooms: schoolData.classrooms || []
         };

@@ -50,6 +50,10 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
   };
 
   const getScheduleForClass = (classId: string) => {
+    console.log('Getting schedule for class:', classId);
+    console.log('Available schedule entries:', schedule.entries);
+    console.log('School data:', school);
+    
     const scheduleGrid = Array(DAYS.length).fill(null).map(() => 
       Array(7).fill(null)
     );
@@ -57,9 +61,11 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
     schedule.entries
       .filter(entry => entry.classId === classId)
       .forEach(entry => {
+        console.log('Adding entry to grid:', entry);
         scheduleGrid[entry.day][entry.hour] = entry;
       });
 
+    console.log('Final schedule grid:', scheduleGrid);
     return scheduleGrid;
   };
 
