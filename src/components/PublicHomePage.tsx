@@ -177,7 +177,7 @@ export const PublicHomePage: React.FC<PublicHomePageProps> = ({
           </h3>
           <div className="text-sm text-gray-600">
             <p>Укупно часова: {schoolSchedules.length}</p>
-            <p>Активних одељења: {[...new Set(schoolSchedules.map(s => s.class_id))].length}</p>
+            <p>Активних одељења: {Array.from(new Set(schoolSchedules.map(s => s.class_id))).length}</p>
           </div>
           <button
             onClick={() => handleViewSchedule(selectedSchool)}
