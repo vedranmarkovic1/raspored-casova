@@ -43,7 +43,7 @@ export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLo
 
   const handleCreateSchool = async () => {
     if (!newSchool.name.trim()) {
-      alert('Молимо унесите име школе')
+      window.alert('Молимо унесите име школе')
       return
     }
 
@@ -57,15 +57,15 @@ export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLo
         schedule_type: 'same'
       })
       setShowCreateForm(false)
-      alert('Школа је успешно креирана!')
+      window.alert('Школа је успешно креирана!')
     } catch (error) {
-      alert('Грешка при креирању школе: ' + (error as Error).message)
+      window.alert('Грешка при креирању школе: ' + (error as Error).message)
     }
   }
 
   const handleCreateUser = async () => {
     if (!newUser.username.trim() || !newUser.password.trim() || !newUser.schoolId) {
-      alert('Молимо попуните сва поља')
+      window.alert('Молимо попуните сва поља')
       return
     }
 
@@ -76,23 +76,23 @@ export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLo
         schoolId: newUser.schoolId
       })
       setNewUser({ username: '', password: '', schoolId: '' })
-      alert('Корисник је успешно креиран!')
+      window.alert('Корисник је успешно креиран!')
     } catch (error) {
-      alert('Грешка при креирању корисника: ' + (error as Error).message)
+      window.alert('Грешка при креирању корисника: ' + (error as Error).message)
     }
   }
 
   const handleDeleteSchool = async (schoolId: string) => {
-    if (!confirm('Да ли сте сигурни да желите да обришете ову школу?')) {
+    if (!window.confirm('Да ли сте сигурни да желите да обришете ову школу?')) {
       return
     }
 
     try {
       await schoolService.delete(schoolId)
       setSchools(prev => prev.filter(s => s.id !== schoolId))
-      alert('Школа је обрисана!')
+      window.alert('Школа је обрисана!')
     } catch (error) {
-      alert('Грешка при брисању школе: ' + (error as Error).message)
+      window.alert('Грешка при брисању школе: ' + (error as Error).message)
     }
   }
 

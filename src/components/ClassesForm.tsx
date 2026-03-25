@@ -26,7 +26,7 @@ export const ClassesForm: React.FC<ClassesFormProps> = ({ schoolType, onSubmit, 
 
   const addClass = () => {
     if (!currentClass.trim()) {
-      alert('Молимо унесите назив одељења');
+      window.alert('Молимо унесите назив одељења');
       return;
     }
 
@@ -48,7 +48,7 @@ export const ClassesForm: React.FC<ClassesFormProps> = ({ schoolType, onSubmit, 
 
   const addSubjectToClass = (classId: string) => {
     if (!currentSubject.trim() || !currentTeacher.trim()) {
-      alert('Молимо унесите предмет и наставника');
+      window.alert('Молимо унесите предмет и наставника');
       return;
     }
 
@@ -111,13 +111,13 @@ export const ClassesForm: React.FC<ClassesFormProps> = ({ schoolType, onSubmit, 
 
   const handleSubmit = () => {
     if (classes.length === 0) {
-      alert('Молимо додајте барем једно одељење');
+      window.alert('Молимо додајте барем једно одељење');
       return;
     }
 
     const hasEmptySubjects = classes.some(c => c.subjects.length === 0);
     if (hasEmptySubjects) {
-      alert('Сва одељења морају имати барем један предмет');
+      window.alert('Сва одељења морају имати барем један предмет');
       return;
     }
 

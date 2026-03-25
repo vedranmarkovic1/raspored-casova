@@ -15,7 +15,7 @@ export const SchoolForm: React.FC<SchoolFormProps> = ({ onSubmit }) => {
     e.preventDefault();
     
     if (!schoolName.trim()) {
-      alert('Молимо унесите име школе');
+      window.alert('Молимо унесите име школе');
       return;
     }
 
