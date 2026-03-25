@@ -44,10 +44,89 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (user: any) => {
+  const handleLogin = async (user: any) => {
     setCurrentUser(user);
     if (user.role === 'coordinator') {
       setCurrentStep('coordinator');
+    } else if (user.role === 'school' && user.school_id) {
+      // For school users, load their schedule directly
+      try {
+        // Get school info
+        const schoolData = await schoolService.getById(user.school_id);
+        if (schoolData) {
+          // Load school data with relations
+          const fullSchoolData = await schoolService.getWithRelations(user.school_id);
+          
+          if (fullSchoolData) {
+            // Group subjects by class_id
+            const subjectsByClass: { [key: string]: any[] } = {};
+            if (fullSchoolData.subjects) {
+              fullSchoolData.subjects.forEach((subject: any) => {
+                if (!subjectsByClass[subject.class_id]) {
+                  subjectsByClass[subject.class_id] = [];
+                }
+                subjectsByClass[subject.class_id].push(subject);
+              });
+            }
+
+            // Add subjects to classes
+            const classesWithSubjects = fullSchoolData.classes?.map((cls: any) => ({
+              ...cls,
+              subjects: subjectsByClass[cls.id] || []
+            })) || [];
+
+            const loadedSchoolData = {
+              classes: classesWithSubjects,
+              teachers: fullSchoolData.teachers || [],
+              classrooms: fullSchoolData.classrooms || []
+            };
+
+            // Load schedule
+            const scheduleData = await scheduleService.getAll(user.school_id);
+            
+            let schedule: Schedule | null = null;
+            if (scheduleData && scheduleData.length > 0) {
+              const entries = scheduleData.map(entry => ({
+                id: entry.id,
+                classId: entry.class_id,
+                subjectId: entry.subject_id,
+                teacherId: entry.teacher_id,
+                classroomId: entry.classroom_id,
+                day: entry.day,
+                hour: entry.hour
+              }));
+
+              schedule = {
+                id: `schedule_${user.school_id}`,
+                schoolId: user.school_id,
+                entries: entries
+              };
+            } else {
+              schedule = {
+                id: `schedule_${user.school_id}`,
+                schoolId: user.school_id,
+                entries: []
+              };
+            }
+
+            // Set school info and data
+            setSchoolInfo({
+              name: schoolData.name,
+              type: schoolData.type,
+              shiftType: schoolData.shift_type,
+              scheduleType: schoolData.schedule_type
+            });
+            
+            setSchoolData(loadedSchoolData);
+            setSchedule(schedule);
+            setCurrentStep('schedule-view');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading school schedule on login:', error);
+        // Fallback to school-info if there's an error
+        setCurrentStep('school-info');
+      }
     } else {
       setCurrentStep('school-info');
     }

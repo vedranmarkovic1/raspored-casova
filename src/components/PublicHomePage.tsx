@@ -36,6 +36,7 @@ export const PublicHomePage: React.FC<PublicHomePageProps> = ({
   const loadSchools = async () => {
     try {
       const data = await schoolService.getAll()
+      console.log('Loaded schools:', data);
       setSchools(data)
       setFilteredSchools(data)
     } catch (error) {
