@@ -72,13 +72,35 @@ export const schoolService = {
         *,
         classes (*),
         teachers (*),
-        classrooms (*),
-        subjects (*)
+        classrooms (*)
       `)
       .eq('id', id)
       .single()
 
     if (error) throw error
+    
+    // Load subjects separately for each class
+    if (data && data.classes) {
+      const classIds = data.classes.map((cls: any) => cls.id);
+      if (classIds.length > 0) {
+        const { data: subjects, error: subjectsError } = await supabase
+          .from('subjects')
+          .select('*')
+          .in('class_id', classIds)
+        
+        if (!subjectsError) {
+          data.subjects = subjects;
+        } else {
+          console.error('Error loading subjects:', subjectsError);
+          data.subjects = [];
+        }
+      } else {
+        data.subjects = [];
+      }
+    } else {
+      data.subjects = [];
+    }
+    
     return data
   }
 }
