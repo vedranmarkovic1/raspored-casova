@@ -7,6 +7,8 @@ import { PublicHomePage } from './components/PublicHomePage';
 import { Header } from './components/Header';
 import { ScheduleGenerator } from './utils/scheduleGenerator';
 import { authService } from './services/authService';
+import { scheduleService } from './services/scheduleService';
+import { schoolService } from './services/schoolService';
 import { School, SchoolType, ShiftType, ScheduleType, Class, Teacher, Classroom, Schedule } from './types';
 
 type Step = 'public' | 'school-info' | 'classes-subjects' | 'schedule-view' | 'coordinator';
@@ -66,7 +68,7 @@ function App() {
     setCurrentStep('classes-subjects');
   };
 
-  const handleClassesSubmit = (data: {
+  const handleClassesSubmit = async (data: {
     classes: Class[];
     teachers: Teacher[];
     classrooms: Classroom[];
@@ -75,17 +77,51 @@ function App() {
 
     setSchoolData(data);
 
-    // Create complete school object
-    const school: School = {
-      id: `school_${Date.now()}`,
-      ...schoolInfo,
-      ...data
-    };
+    // Try to load schedule from database first
+    try {
+      // Use a fixed school ID for now - in real app this would come from the database
+      const schoolId = 'a427359c-5b65-4596-906e-a0554d10521c';
+      const scheduleData = await scheduleService.getAll(schoolId);
+      
+      if (scheduleData && scheduleData.length > 0) {
+        // Transform database data to Schedule format
+        const entries = scheduleData.map(entry => ({
+          id: entry.id,
+          classId: entry.class_id,
+          subjectId: entry.subject_id,
+          teacherId: entry.teacher_id,
+          classroomId: entry.classroom_id,
+          day: entry.day,
+          hour: entry.hour
+        }));
 
-    // Generate schedule
-    const generator = new ScheduleGenerator(school);
-    const generatedSchedule = generator.generateSchedule();
-    setSchedule(generatedSchedule);
+        const loadedSchedule: Schedule = {
+          id: `schedule_${schoolId}`,
+          schoolId: schoolId,
+          entries: entries
+        };
+
+        setSchedule(loadedSchedule);
+      } else {
+        // No schedule in database, create empty one
+        const emptySchedule: Schedule = {
+          id: `schedule_${schoolId}`,
+          schoolId: schoolId,
+          entries: []
+        };
+        setSchedule(emptySchedule);
+      }
+    } catch (error) {
+      console.error('Error loading schedule from database:', error);
+      // Create empty schedule on error
+      const emptySchedule: Schedule = {
+        id: `schedule_${Date.now()}`,
+        schoolId: 'unknown',
+        entries: []
+      };
+      setSchedule(emptySchedule);
+    }
+
     setCurrentStep('schedule-view');
   };
 
@@ -104,9 +140,153 @@ function App() {
     setSchedule(null);
   };
 
-  const handlePublicSchoolSelect = (school: any) => {
-    // For public users, we'll show the schedule in read-only mode
-    // This would need to be implemented with actual data from the database
+  // Load schedule from database
+  const loadScheduleFromDatabase = async (schoolId: string) => {
+    try {
+      const scheduleData = await scheduleService.getAll(schoolId);
+      
+      if (scheduleData && scheduleData.length > 0) {
+        // Transform database data to Schedule format
+        const entries = scheduleData.map(entry => ({
+          id: entry.id,
+          classId: entry.class_id,
+          subjectId: entry.subject_id,
+          teacherId: entry.teacher_id,
+          classroomId: entry.classroom_id,
+          day: entry.day,
+          hour: entry.hour
+        }));
+
+        const loadedSchedule: Schedule = {
+          id: `schedule_${schoolId}`,
+          schoolId: schoolId,
+          entries: entries
+        };
+
+        setSchedule(loadedSchedule);
+        return loadedSchedule;
+      } else {
+        // No schedule found, create empty one
+        const emptySchedule: Schedule = {
+          id: `schedule_${schoolId}`,
+          schoolId: schoolId,
+          entries: []
+        };
+        setSchedule(emptySchedule);
+        return emptySchedule;
+      }
+    } catch (error) {
+      console.error('Error loading schedule:', error);
+      // Create empty schedule on error
+      const emptySchedule: Schedule = {
+        id: `schedule_${schoolId}`,
+        schoolId: schoolId,
+        entries: []
+      };
+      setSchedule(emptySchedule);
+      return emptySchedule;
+    }
+  };
+
+  // Load schedule when entering schedule-view step
+  useEffect(() => {
+    if (currentStep === 'schedule-view' && schoolInfo && schoolData && !schedule) {
+      // Use a fixed school ID for now - in real app this would come from the database
+      const schoolId = 'a427359c-5b65-4596-906e-a0554d10521c';
+      loadScheduleFromDatabase(schoolId);
+    }
+  }, [currentStep, schoolInfo, schoolData, schedule]);
+
+  // Load school data from database
+  const loadSchoolDataFromDatabase = async (schoolId: string) => {
+    try {
+      const schoolData = await schoolService.getById(schoolId);
+      
+      if (schoolData) {
+        const loadedSchoolData = {
+          classes: schoolData.classes || [],
+          teachers: schoolData.teachers || [],
+          classrooms: schoolData.classrooms || []
+        };
+
+        setSchoolData(loadedSchoolData);
+        return loadedSchoolData;
+      }
+    } catch (error) {
+      console.error('Error loading school data:', error);
+    }
+    return null;
+  };
+
+  // Load all data when entering schedule-view
+  useEffect(() => {
+    if (currentStep === 'schedule-view' && schoolInfo && !schoolData) {
+      const schoolId = 'a427359c-5b65-4596-906e-a0554d10521c';
+      loadSchoolDataFromDatabase(schoolId);
+    }
+  }, [currentStep, schoolInfo, schoolData]);
+
+  const handlePublicSchoolSelect = async (school: any) => {
+    // For public users, load school data and show schedule
+    try {
+      // Load school data
+      const schoolData = await schoolService.getById(school.id);
+      
+      if (schoolData) {
+        const loadedSchoolData = {
+          classes: schoolData.classes || [],
+          teachers: schoolData.teachers || [],
+          classrooms: schoolData.classrooms || []
+        };
+
+        // Load schedule
+        const scheduleData = await scheduleService.getAll(school.id);
+        
+        let schedule: Schedule | null = null;
+        if (scheduleData && scheduleData.length > 0) {
+          const entries = scheduleData.map(entry => ({
+            id: entry.id,
+            classId: entry.class_id,
+            subjectId: entry.subject_id,
+            teacherId: entry.teacher_id,
+            classroomId: entry.classroom_id,
+            day: entry.day,
+            hour: entry.hour
+          }));
+
+          schedule = {
+            id: `schedule_${school.id}`,
+            schoolId: school.id,
+            entries: entries
+          };
+        } else {
+          schedule = {
+            id: `schedule_${school.id}`,
+            schoolId: school.id,
+            entries: []
+          };
+        }
+
+        // Set school info and data
+        setSchoolInfo({
+          name: school.name,
+          type: school.type,
+          shiftType: school.shift_type,
+          scheduleType: school.schedule_type
+        });
+        
+        setSchoolData(loadedSchoolData);
+        setSchedule(schedule);
+        setCurrentStep('schedule-view');
+      }
+    } catch (error) {
+      console.error('Error loading school schedule:', error);
+    }
+  };
+
+  const handleCoordinatorViewSchool = async (school: any) => {
+    // Load school data and show schedule for coordinator
+    await handlePublicSchoolSelect(school);
   };
 
   const renderCurrentStep = () => {
@@ -123,6 +303,7 @@ function App() {
         return (
           <CoordinatorDashboard
             onLogout={handleLogout}
+            onViewSchool={handleCoordinatorViewSchool}
           />
         );
       

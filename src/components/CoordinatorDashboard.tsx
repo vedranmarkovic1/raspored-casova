@@ -5,9 +5,10 @@ import { authService } from '../services/authService'
 
 interface CoordinatorDashboardProps {
   onLogout: () => void
+  onViewSchool?: (school: any) => void
 }
 
-export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLogout }) => {
+export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLogout, onViewSchool }) => {
   const [schools, setSchools] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -223,6 +224,7 @@ export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLo
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => onViewSchool && onViewSchool(school)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                       title="Преглед школе"
                     >
