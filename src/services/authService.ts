@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase'
-import { Database } from '../types/database'
 
 export interface LoginCredentials {
   username: string
