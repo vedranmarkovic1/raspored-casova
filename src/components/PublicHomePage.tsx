@@ -57,6 +57,7 @@ export const PublicHomePage: React.FC<PublicHomePageProps> = ({
   }
 
   const handleViewSchedule = (school: any) => {
+    console.log('handleViewSchedule called with school:', school);
     onSelectSchool(school)
   }
 

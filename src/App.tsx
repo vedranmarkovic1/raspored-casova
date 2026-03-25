@@ -244,9 +244,11 @@ function App() {
 
   const handlePublicSchoolSelect = async (school: any) => {
     // For public users, load school data and show schedule
+    console.log('handlePublicSchoolSelect called with school:', school);
     try {
       // Load school data with relations
       const schoolData = await schoolService.getWithRelations(school.id);
+      console.log('School data loaded:', schoolData);
       
       if (schoolData) {
         // Group subjects by class_id
@@ -272,8 +274,11 @@ function App() {
           classrooms: schoolData.classrooms || []
         };
 
+        console.log('Processed school data:', loadedSchoolData);
+
         // Load schedule
         const scheduleData = await scheduleService.getAll(school.id);
+        console.log('Schedule data loaded:', scheduleData);
         
         let schedule: Schedule | null = null;
         if (scheduleData && scheduleData.length > 0) {
@@ -300,6 +305,8 @@ function App() {
           };
         }
 
+        console.log('Final schedule:', schedule);
+
         // Set school info and data
         setSchoolInfo({
           name: school.name,
@@ -311,6 +318,8 @@ function App() {
         setSchoolData(loadedSchoolData);
         setSchedule(schedule);
         setCurrentStep('schedule-view');
+        
+        console.log('Navigation to schedule-view completed');
       }
     } catch (error) {
       console.error('Error loading school schedule:', error);
