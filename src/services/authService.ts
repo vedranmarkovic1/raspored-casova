@@ -2,7 +2,6 @@ import { supabase } from '../lib/supabase'
 import { Database } from '../types/database'
 
 type User = Database['public']['Tables']['users']
-type UserInsert = User['Insert']
 
 export interface LoginCredentials {
   username: string

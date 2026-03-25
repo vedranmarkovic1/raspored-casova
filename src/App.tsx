@@ -29,7 +29,6 @@ function App() {
   } | null>(null);
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPublicSchool, setSelectedPublicSchool] = useState<any>(null);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -60,7 +59,6 @@ function App() {
     setSchoolInfo(null);
     setSchoolData(null);
     setSchedule(null);
-    setSelectedPublicSchool(null);
   };
 
   const handleSchoolInfoSubmit = (info: SchoolBasicInfo) => {
@@ -107,7 +105,6 @@ function App() {
   };
 
   const handlePublicSchoolSelect = (school: any) => {
-    setSelectedPublicSchool(school);
     // For public users, we'll show the schedule in read-only mode
     // This would need to be implemented with actual data from the database
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Eye, Edit, Trash2, Users, School } from 'lucide-react'
+import { Plus, Eye, Trash2, Users, School } from 'lucide-react'
 import { schoolService } from '../services/schoolService'
 import { authService } from '../services/authService'
 
@@ -11,7 +11,6 @@ export const CoordinatorDashboard: React.FC<CoordinatorDashboardProps> = ({ onLo
   const [schools, setSchools] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [selectedSchool, setSelectedSchool] = useState<any>(null)
 
   const [newSchool, setNewSchool] = useState({
     name: '',

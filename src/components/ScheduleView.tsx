@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { School, Schedule, Class, Teacher, Classroom, Subject } from '../types';
+import { ArrowLeft, RotateCcw, Users, BookOpen, DoorOpen } from 'lucide-react';
+import { School, Schedule, ScheduleEntry, Teacher, Classroom } from '../types';
 
 interface ScheduleViewProps {
   school: School;

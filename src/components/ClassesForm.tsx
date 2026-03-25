@@ -21,9 +21,6 @@ export const ClassesForm: React.FC<ClassesFormProps> = ({ schoolType, onSubmit, 
   const [currentTeacher, setCurrentTeacher] = useState('');
   const [currentClassroom, setCurrentClassroom] = useState('');
 
-  const [currentTeacherName, setCurrentTeacherName] = useState('');
-  const [currentClassroomNumber, setCurrentClassroomNumber] = useState('');
-
   const addClass = () => {
     if (!currentClass.trim()) {
       window.alert('Молимо унесите назив одељења');
