@@ -35,6 +35,8 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
   const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null);
   const [selectedClassroom, setSelectedClassroom] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(autoEditMode);
+  const [editingCell, setEditingCell] = useState<{day: number, hour: number, classId: string} | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
 
   const findSubject = (subjectId: string): Subject | undefined => {
     for (const classInfo of school.classes) {
@@ -50,6 +52,85 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
 
   const findClassroom = (classroomId: string): Classroom | undefined => {
     return school.classrooms.find(c => c.id === classroomId);
+  };
+
+  const handleCellClick = (day: number, hour: number, classId: string) => {
+    if (!isEditMode) return;
+    
+    const existingEntry = schedule.entries.find(
+      entry => entry.day === day && entry.hour === hour && entry.classId === classId
+    );
+    
+    setEditingCell({ day, hour, classId });
+    setSelectedSubject(existingEntry?.subjectId || '');
+  };
+
+  const handleSubjectChange = (subjectId: string) => {
+    setSelectedSubject(subjectId);
+  };
+
+  const handleSaveSubject = async () => {
+    if (!editingCell) return;
+
+    try {
+      const { day, hour, classId } = editingCell;
+      
+      if (selectedSubject) {
+        // Find the subject to get teacher and classroom
+        const subject = findSubject(selectedSubject);
+        if (!subject) return;
+
+        // Check if entry already exists
+        const existingEntry = schedule.entries.find(
+          entry => entry.day === day && entry.hour === hour && entry.classId === classId
+        );
+
+        if (existingEntry) {
+          // Update existing entry
+          // Note: We would need to add update functionality to scheduleService
+          console.log('Updating entry:', existingEntry.id, 'to subject:', selectedSubject);
+        } else {
+          // Create new entry
+          const newEntry = {
+            school_id: school.id,
+            day,
+            hour,
+            class_id: classId,
+            subject_id: selectedSubject,
+            teacher_id: subject.teacherId,
+            classroom_id: subject.classroomId
+          };
+
+          // Note: We would need to add create functionality to scheduleService
+          console.log('Creating new entry:', newEntry);
+        }
+      } else {
+        // Remove entry (clear the cell)
+        const existingEntry = schedule.entries.find(
+          entry => entry.day === day && entry.hour === hour && entry.classId === classId
+        );
+        
+        if (existingEntry) {
+          console.log('Removing entry:', existingEntry.id);
+        }
+      }
+
+      // Close editing mode
+      setEditingCell(null);
+      setSelectedSubject('');
+      
+      // In a real implementation, we would refresh the schedule data here
+      alert('Промене су сачуване! (У реализацији: потребно додати save функционалност)');
+      
+    } catch (error) {
+      console.error('Error saving subject:', error);
+      alert('Грешка при чувању промена!');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCell(null);
+    setSelectedSubject('');
   };
 
   const getScheduleForClass = (classId: string) => {
@@ -119,8 +200,65 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
                 <tr key={dayIndex}>
                   <td className="font-medium bg-gray-50 w-32">{day}</td>
                   {grid[dayIndex].map((entry: any, hourIndex: number) => {
+                    const isCurrentlyEditing = editingCell && 
+                      editingCell.day === dayIndex && 
+                      editingCell.hour === hourIndex && 
+                      editingCell.classId === selectedClass;
+
+                    if (isCurrentlyEditing) {
+                      // Show editing interface
+                      const classInfo = school.classes.find(c => c.id === selectedClass);
+                      const availableSubjects = classInfo?.subjects || [];
+
+                      return (
+                        <td key={hourIndex} className="p-2 border w-40 min-w-32 bg-yellow-50">
+                          <select
+                            value={selectedSubject}
+                            onChange={(e) => handleSubjectChange(e.target.value)}
+                            className="w-full text-sm border rounded p-1"
+                            autoFocus
+                          >
+                            <option value="">Изаберите предмет</option>
+                            {availableSubjects.map((subject: any) => (
+                              <option key={subject.id} value={subject.id}>
+                                {subject.name}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="flex gap-1 mt-1">
+                            <button
+                              onClick={handleSaveSubject}
+                              className="text-xs bg-green-600 text-white px-2 py-1 rounded"
+                            >
+                              Сачувај
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="text-xs bg-red-600 text-white px-2 py-1 rounded"
+                            >
+                              Откажи
+                            </button>
+                          </div>
+                        </td>
+                      );
+                    }
+
+                    // Check if this cell should be clickable in edit mode
+                    const isClickable = isEditMode && selectedClass;
+                    const cellClass = isClickable ? 'cursor-pointer hover:bg-gray-100' : '';
+
                     if (!entry) {
-                      return <td key={hourIndex} className="bg-gray-50 w-40 min-w-32"></td>;
+                      return (
+                        <td 
+                          key={hourIndex} 
+                          className={`bg-gray-50 w-40 min-w-32 ${cellClass}`}
+                          onClick={() => isClickable && handleCellClick(dayIndex, hourIndex, selectedClass!)}
+                        >
+                          {isEditMode && selectedClass && (
+                            <div className="text-center text-gray-400 text-xs">+</div>
+                          )}
+                        </td>
+                      );
                     }
 
                     const subject = findSubject(entry.subjectId);
@@ -131,7 +269,8 @@ export const ScheduleViewComponent: React.FC<ScheduleViewProps> = ({
                     return (
                       <td 
                         key={hourIndex} 
-                        className={`p-3 text-sm border w-40 min-w-32 ${getCategoryColor(subject?.category || '')}`}
+                        className={`p-3 text-sm border w-40 min-w-32 ${getCategoryColor(subject?.category || '')} ${cellClass}`}
+                        onClick={() => isClickable && handleCellClick(dayIndex, hourIndex, selectedClass!)}
                       >
                         <div className="font-semibold">{subject?.name}</div>
                         {activeTab === 'teachers' && classInfo && (
